@@ -1,76 +1,88 @@
+var WIDTH = window.innerWidth;
+var HEIGHT = window.innerHeight;
+
 window.onload = function () {
-    // 准备容器
-    bootCheck();
-    let app = createApp();
-    let stage = app.stage;
-    let resources = PIXI.utils.TextureCache;
-
-    // 绘制机房轮廓
-    drawRoomContour(stage);
-
-    // 加载资源
-    PIXI.loader.add([
-        "images/server_white.svg",
-    ]).load(afterLoad);
-
-    // 资源加载完成
-    function afterLoad() {
-        let server_white = new PIXI.Sprite(resources["images/server_white.svg"]);
-        // stage.addChild(server_white);
-    }
-}
-
-// 检查是否支持WebGL
-function bootCheck() {
-    let type = "WebGL"
-    if (!PIXI.utils.isWebGLSupported()) {
-        type = "canvas"
-    }
-    PIXI.utils.sayHello(type)
-}
-
-// 创建应用
-function createApp() {
-    let app = new PIXI.Application({
-        antialias: true,
-        transparent: false,
-        backgroundColor: 0x1F1E2C,
-        resolution: 1
+    // 初始化画布
+    let stage = new Konva.Stage({
+        container: 'container',
+        width: WIDTH,
+        height: HEIGHT
     });
-    app.renderer.view.style.position = "absolute";
-    app.renderer.view.style.display = "block";
-    app.renderer.autoResize = true;
-    app.renderer.resize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(app.view);
-    return app;
+    // 绘制机房轮廓
+    drawRoomContour(stage)
+    // 绘制服务器
+    let serverLayer = new Konva.Layer();
+    drawServer(stage, serverLayer, 100, 100)
+    drawServer(stage, serverLayer, 150, 150)
+    drawServer(stage, serverLayer, 200, 200)
+}
+
+
+function drawServer(stage, serverLayer, x, y) {
+    // 加载资源
+    var asset = new Image();
+    asset.src = './images/server_white.svg';
+    // 资源加载完成
+    asset.onload = function () {
+        let server = new Konva.Image({
+            x: x,
+            y: y,
+            image: asset,
+            scale: { x: 0.05, y: 0.05 },
+            draggable: true
+        });
+        serverLayer.add(server);
+        stage.add(serverLayer);
+        // 可拖拽物品把鼠标样式改成小手
+        mouseDragStyle(stage, server);
+    }
 }
 
 function drawRoomContour(stage) {
-    // 初始化
-    let xGap = 15;
-    let yGap = 15;
-    let outline_breadth = 3;
-    let inline_breadth = 2;
-    let container = new PIXI.Container();
-    let outline = new PIXI.Graphics();
-    let line1 = new PIXI.Graphics();
+    // 初始化参数
+    let xGap = 80;
+    let yGap = 80;
+    let outline_breath = 4;
+    let line_breath = 3;
+    let line_color = "#FFFFFF";
+    let layer = new Konva.Layer();
+    let group = new Konva.Group({
+        x: xGap,
+        y: yGap,
+    });
 
-    // 设置总容器
-    container.addChild(outline);
-    container.addChild(line1)
-    container.position.set(xGap, yGap);
+    // 设置外边框
+    let outline = new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: WIDTH - 2 * xGap,
+        height: HEIGHT - 2 * yGap,
+        stroke: line_color,
+        strokeWidth: outline_breath
+    });
 
-    // 绘制外边框
-    outline.lineStyle(outline_breadth, 0xFFFFFF, 1);
-    outline.drawRect(0, 0, window.innerWidth - 2 * xGap, window.innerHeight - 2 * yGap);
-    outline.endFill();
-    
-    // 绘制内边框1
-    line1.lineStyle(inline_breadth, 0xFFFFFF, 1);
-    line1.moveTo(0, outline.height - 100);
-    line1.lineTo(outline.width - outline_breadth, outline.height - 100);
-    
+    // 设置内部线条
+    let line0 = new Konva.Line({
+        points: [0, 0.8 * outline.height(), outline.width(), 0.8 * outline.height()],
+        stroke: line_color,
+        strokeWidth: line_breath,
+        lineCap: 'miter',
+        lineJoin: 'round'
+    });
+
     // 渲染
-    stage.addChild(container);
-    return container;
+    group.add(outline);
+    group.add(line0);
+    layer.add(group);
+    layer.moveToBottom();
+    stage.add(layer);
+}
+
+function mouseDragStyle(stage, target) {
+    target.on('mouseenter', function () {
+        stage.container().style.cursor = 'pointer';
+    });
+    target.on('mouseleave', function () {
+        stage.container().style.cursor = 'default';
+    });
 }
