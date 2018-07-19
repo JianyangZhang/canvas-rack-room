@@ -58,7 +58,56 @@ window.onload = function () {
         rotate: false,
     });
 }
+/* 机架 */
+function drawRack(stage, rackGroup, rackLayer, options) {
+    let x = options.x == undefined ? 0 : options.x;
+    let y = options.y == undefined ? 0 : options.y;
+    let condition = options.condition == undefined ? 0 : options.condition;
+    // 加载资源
+    let rack_green = new Image();
+    rack_green.src = './images/rack_green.svg';
+    let rack = new Image();
+    if (condition == 0) {
+        rack.src = './images/rack_white.svg';
+    } else {
+        rack.src = './images/rack_red.svg';
+    }
+    // 资源加载完成
+    rack.onload = function () {
+        let theRack = new Konva.Image({
+            x: x,
+            y: y,
+            image: rack,
+            width: 40,
+            height: 40,
+            draggable: true,
+            name: "draggable",
+        });
+        rackGroup.add(theRack)
+        rackLayer.add(rackGroup);
+        stage.add(rackLayer);
+        rackLayer.setZIndex(5);
+        // 对齐到网格
+        snapToGrid(theRack, rackLayer);
+        // 事件绑定
+        theRack.on('mouseenter', function () {
+            stage.container().style.cursor = 'pointer';
+            if (condition == 0) {
+                theRack.setImage(rack_green);
+                rackLayer.draw();
+            }
+        });
+        theRack.on('mouseleave', function () {
+            stage.container().style.cursor = 'default';
+            if (condition == 0) {
+                theRack.setImage(rack);
+                rackLayer.draw();
+            }
+        });
+    }
+}
 
+/* 风扇 */
 function drawFan(stage, fanGroup, fanLayer, options) {
     let x = options.x == undefined ? 30 : options.x;
     let y = options.y == undefined ? 30 : options.y;
@@ -120,54 +169,7 @@ function drawFan(stage, fanGroup, fanLayer, options) {
     }
 }
 
-function drawRack(stage, rackGroup, rackLayer, options) {
-    let x = options.x == undefined ? 0 : options.x;
-    let y = options.y == undefined ? 0 : options.y;
-    let condition = options.condition == undefined ? 0 : options.condition;
-    // 加载资源
-    let rack_green = new Image();
-    rack_green.src = './images/rack_green.svg';
-    let rack = new Image();
-    if (condition == 0) {
-        rack.src = './images/rack_white.svg';
-    } else {
-        rack.src = './images/rack_red.svg';
-    }
-    // 资源加载完成
-    rack.onload = function () {
-        let theRack = new Konva.Image({
-            x: x,
-            y: y,
-            image: rack,
-            width: 40,
-            height: 40,
-            draggable: true,
-            name: "draggable",
-        });
-        rackGroup.add(theRack)
-        rackLayer.add(rackGroup);
-        stage.add(rackLayer);
-        rackLayer.setZIndex(5);
-        // 对齐到网格
-        snapToGrid(theRack, rackLayer);
-        // 事件绑定
-        theRack.on('mouseenter', function () {
-            stage.container().style.cursor = 'pointer';
-            if (condition == 0) {
-                theRack.setImage(rack_green);
-                rackLayer.draw();
-            }
-        });
-        theRack.on('mouseleave', function () {
-            stage.container().style.cursor = 'default';
-            if (condition == 0) {
-                theRack.setImage(rack);
-                rackLayer.draw();
-            }
-        });
-    }
-}
-
+/* 房间 */
 function drawRoomContour(stage) {
     // 初始化参数
     let seats = new Image();
@@ -255,6 +257,7 @@ function drawRoomContour(stage) {
     }
 }
 
+/* 网格 */
 function drawGrids(stage) {
     let gridLayer = new Konva.Layer();
     let group = new Konva.Group();
@@ -284,7 +287,7 @@ function drawGrids(stage) {
     return { group: group, layer: gridLayer }
 }
 
-
+/* 对齐网格 */
 function snapToGrid(obj, layer) {
     obj.on('dragend', function () {
         let offsetX = obj.x() % 10;
