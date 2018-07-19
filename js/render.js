@@ -22,10 +22,12 @@ window.onload = function () {
     for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
         for (let j = 0.2 * HEIGHT; j <= 0.45 * HEIGHT; j += 40) {
             let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
+            let status = condition == 10 ? "正常" : "告警";
             drawRack(stage, rackGroup, rackLayer, {
                 x: i,
                 y: j,
                 condition: condition,
+                hoverText: "编号: xxx<br>状态: " + status + "<br>详细信息: xxx"
             });
         }
     }
@@ -33,10 +35,12 @@ window.onload = function () {
     for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
         for (let j = 0.55 * HEIGHT; j <= 0.7 * HEIGHT; j += 40) {
             let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
+            let status = condition == 10 ? "正常" : "告警";
             drawRack(stage, rackGroup, rackLayer, {
                 x: i,
                 y: j,
                 condition: condition,
+                hoverText: "编号: xxx<br>状态: " + status + "<br>详细信息: xxx"
             });
         }
     }
@@ -72,6 +76,31 @@ function drawRack(stage, rackGroup, rackLayer, options) {
     } else {
         rack.src = './images/rack_red.svg';
     }
+    // 绘制悬停标签
+    let tooltip = new Konva.Label({
+        x: 200,
+        y: 200,
+        opacity: 0.75,
+        visible: true
+    });
+    tooltip.add(new Konva.Tag({
+        fill: 'black',
+        pointerDirection: 'left',
+        pointerWidth: 10,
+        pointerHeight: 10,
+        lineJoin: 'round',
+        shadowColor: 'black',
+        shadowBlur: 10,
+        shadowOffset: 10,
+        shadowOpacity: 0.5
+    }));
+    tooltip.add(new Konva.Text({
+        text: options.hoverText,
+        fontFamily: 'Calibri',
+        fontSize: 18,
+        padding: 5,
+        fill: 'white'
+    }));
     // 资源加载完成
     rack.onload = function () {
         let theRack = new Konva.Image({
@@ -83,7 +112,8 @@ function drawRack(stage, rackGroup, rackLayer, options) {
             draggable: true,
             name: "draggable",
         });
-        rackGroup.add(theRack)
+        rackGroup.add(theRack);
+        rackGroup.add(tooltip);
         rackLayer.add(rackGroup);
         stage.add(rackLayer);
         rackLayer.setZIndex(5);
