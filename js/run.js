@@ -8,33 +8,53 @@ window.onload = function () {
         width: WIDTH,
         height: HEIGHT
     });
+    // 绘制网格
+    drawGrids(stage);
     // 绘制机房轮廓
-    drawRoomContour(stage)
+    drawRoomContour(stage);
     // 绘制服务器
     let serverLayer = new Konva.Layer();
-    drawServer(stage, serverLayer, 100, 100)
-    drawServer(stage, serverLayer, 150, 150)
-    drawServer(stage, serverLayer, 200, 200)
+    for (let j = 500; j <= 1000; j += 100) {
+        for (let i = 280; i <= 440; i += 40) {
+            drawServer(stage, serverLayer, j, i);
+        }
+    }
 }
 
 
 function drawServer(stage, serverLayer, x, y) {
     // 加载资源
-    var asset = new Image();
-    asset.src = './images/server_white.svg';
+    let server_green = new Image();
+    server_green.src = './images/server_green.svg';
+    let server_white = new Image();
+    server_white.src = './images/server_white.svg';
     // 资源加载完成
-    asset.onload = function () {
-        let server = new Konva.Image({
+    server_white.onload = function () {
+        let serverWhite = new Konva.Image({
             x: x,
             y: y,
-            image: asset,
-            scale: { x: 0.05, y: 0.05 },
-            draggable: true
+            image: server_white,
+            width: 40,
+            height: 40,
+            draggable: true,
         });
-        serverLayer.add(server);
+        serverLayer.add(serverWhite);
         stage.add(serverLayer);
-        // 可拖拽物品把鼠标样式改成小手
-        mouseDragStyle(stage, server);
+        serverLayer.setZIndex(5);
+        // 对齐到网格
+        snapToGrid(serverWhite, serverLayer);
+        // 事件绑定
+        serverWhite.on('mouseenter', function () {
+            stage.container().style.cursor = 'pointer';
+            serverWhite.setImage(server_green);
+            serverLayer.draw();
+        });
+        serverWhite.on('mouseleave', function () {
+            stage.container().style.cursor = 'default';
+            serverWhite.setImage(server_white);
+            serverLayer.draw();
+        });
+
     }
 }
 
@@ -45,7 +65,7 @@ function drawRoomContour(stage) {
     let outline_breath = 4;
     let line_breath = 3;
     let line_color = "#FFFFFF";
-    let layer = new Konva.Layer();
+    let contourLayer = new Konva.Layer();
     let group = new Konva.Group({
         x: xGap,
         y: yGap,
@@ -73,16 +93,54 @@ function drawRoomContour(stage) {
     // 渲染
     group.add(outline);
     group.add(line0);
-    layer.add(group);
-    layer.moveToBottom();
-    stage.add(layer);
+    contourLayer.add(group);
+    stage.add(contourLayer);
+    contourLayer.setZIndex(1);
 }
 
-function mouseDragStyle(stage, target) {
-    target.on('mouseenter', function () {
-        stage.container().style.cursor = 'pointer';
-    });
-    target.on('mouseleave', function () {
-        stage.container().style.cursor = 'default';
+function drawGrids(stage) {
+    let gridLayer = new Konva.Layer();
+    let group = new Konva.Group();
+    for (let i = 10; i < WIDTH; i += 10) {
+        let gridLine = new Konva.Line({
+            points: [i, 0, i, HEIGHT],
+            stroke: "#404040",
+            strokeWidth: 1,
+            lineJoin: 'mister',
+            dash: [12, 2]
+        });
+        group.add(gridLine);
+    }
+    for (let i = 10; i < HEIGHT; i += 10) {
+        let gridLine = new Konva.Line({
+            points: [0, i, WIDTH, i],
+            stroke: "#404040",
+            strokeWidth: 1,
+            lineJoin: 'mister',
+            dash: [12, 2]
+        });
+        group.add(gridLine);
+    }
+    gridLayer.add(group);
+    stage.add(gridLayer);
+    gridLayer.setZIndex(0);
+}
+
+
+function snapToGrid(obj, layer) {
+    obj.on('dragend', function () {
+        let offsetX = obj.x() % 10;
+        let offsetY = obj.y() % 10;
+        if (10 - offsetX > offsetX) {
+            obj.x(obj.x() - offsetX);
+        } else {
+            obj.x(obj.x() + (10 - offsetX));
+        }
+        if (10 - offsetY > offsetY) {
+            obj.y(obj.y() - offsetY);
+        } else {
+            obj.y(obj.y() + (10 - offsetY));
+        }
+        layer.draw();
     });
 }
