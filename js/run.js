@@ -3,6 +3,8 @@ const HEIGHT = 1000;
 const SCALE = { x: 0.65, y: 0.65 };
 
 window.onload = function () {
+    // document.getElementById('container').style.pointerEvents = 'none';
+    // document.getElementById('container').style.pointerEvents = 'auto';
     // 初始化画布
     let stage = new Konva.Stage({
         container: 'container',
@@ -27,7 +29,7 @@ window.onload = function () {
             });
         }
     }
-    
+
     for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
         for (let j = 0.55 * HEIGHT; j <= 0.7 * HEIGHT; j += 40) {
             let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
@@ -38,7 +40,7 @@ window.onload = function () {
             });
         }
     }
-    
+
     // 绘制风扇
     let fanGroup = new Konva.Group();
     let fanLayer = new Konva.Layer();
@@ -92,7 +94,7 @@ function drawFan(stage, fanGroup, fanLayer, options) {
         // 对齐到网格
         snapToGrid(theFan, fanLayer);
         // 绑定事件
-        theFan.on('mouseenter', function () { 
+        theFan.on('mouseenter', function () {
             stage.container().style.cursor = 'pointer';
             theFan.width(100);
             theFan.height(100);
@@ -100,8 +102,8 @@ function drawFan(stage, fanGroup, fanLayer, options) {
             theFan.offsetY(50);
             fanLayer.draw();
         });
-        theFan.on('mouseleave', function () { 
-            stage.container().style.cursor = 'default'; 
+        theFan.on('mouseleave', function () {
+            stage.container().style.cursor = 'default';
             theFan.width(80);
             theFan.height(80);
             theFan.offsetX(40);
@@ -168,6 +170,8 @@ function drawRack(stage, rackGroup, rackLayer, options) {
 
 function drawRoomContour(stage) {
     // 初始化参数
+    let seats = new Image();
+    seats.src = './images/seats.svg';
     let xGap = 80;
     let yGap = 80;
     let outline_breath = 4;
@@ -205,14 +209,50 @@ function drawRoomContour(stage) {
         lineJoin: 'round'
     });
 
-    // 渲染
-    group.add(outline);
-    group.add(line0);
-    group.add(line1);
-    contourLayer.add(group);
-    stage.add(contourLayer);
-    contourLayer.setZIndex(1);
-    return { group: group, layer: contourLayer }
+    // 主门
+    let door0 = new Konva.Rect({
+        x: 0.05 * WIDTH,
+        y: 0,
+        width: 0.1 * WIDTH,
+        height: 0.04 * HEIGHT,
+        stroke: line_color,
+        strokeWidth: outline_breath
+    });
+
+    // 会议室
+    function getSeats(x, y) {
+        return (new Konva.Image({
+            x: x,
+            y: y,
+            image: seats,
+            width: 100,
+            height: 100,
+            draggable: false,
+        }));
+    }
+    seats.onload = function () {
+        let theSeats0 = getSeats(0.77 * WIDTH, 0.5 * HEIGHT);
+        let theSeats1 = getSeats(0.84 * WIDTH, 0.5 * HEIGHT);
+        let theSeats2 = getSeats(0.77 * WIDTH, 0.4 * HEIGHT);
+        let theSeats3 = getSeats(0.84 * WIDTH, 0.4 * HEIGHT);
+        let theSeats4 = getSeats(0.77 * WIDTH, 0.3 * HEIGHT);
+        let theSeats5 = getSeats(0.84 * WIDTH, 0.3 * HEIGHT);
+        // 渲染
+        group.add(theSeats0);
+        group.add(theSeats1);
+        group.add(theSeats2);
+        group.add(theSeats3);
+        group.add(theSeats4);
+        group.add(theSeats5);
+        group.add(outline);
+        group.add(door0);
+        group.add(line0);
+        group.add(line1);
+        contourLayer.add(group);
+        stage.add(contourLayer);
+        contourLayer.setZIndex(1);
+        return { group: group, layer: contourLayer }
+    }
 }
 
 function drawGrids(stage) {
