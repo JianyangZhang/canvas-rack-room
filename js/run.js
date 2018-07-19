@@ -1,48 +1,63 @@
-var WIDTH = window.innerWidth;
-var HEIGHT = window.innerHeight;
+const WIDTH = 2000;
+const HEIGHT = 1000;
+const SCALE = { x: 0.65, y: 0.65 };
 
 window.onload = function () {
     // 初始化画布
     let stage = new Konva.Stage({
         container: 'container',
         width: WIDTH,
-        height: HEIGHT
+        height: HEIGHT,
+        scale: SCALE,
     });
     // 绘制网格
     let grids = drawGrids(stage);
     // 绘制机房轮廓
     let contour = drawRoomContour(stage);
-    // 绘制服务器
-    let serverLayer = new Konva.Layer();
-    for (let i = 500; i <= 1000; i += 100) {
-        for (let j = 280; j <= 440; j += 40) {
-            let condition = 0;
-            if ((i == 600 && j == 320) || (i == 600 && j == 360) || (i == 800 && j == 400)) { condition = 1; }
-            drawServer(stage, serverLayer, {
+    // 绘制机架
+    let rackGroup = new Konva.Group();
+    let rackLayer = new Konva.Layer();
+    for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
+        for (let j = 0.2 * HEIGHT; j <= 0.45 * HEIGHT; j += 40) {
+            let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
+            drawRack(stage, rackGroup, rackLayer, {
                 x: i,
                 y: j,
                 condition: condition,
             });
         }
     }
+    
+    for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
+        for (let j = 0.55 * HEIGHT; j <= 0.7 * HEIGHT; j += 40) {
+            let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
+            drawRack(stage, rackGroup, rackLayer, {
+                x: i,
+                y: j,
+                condition: condition,
+            });
+        }
+    }
+    
     // 绘制风扇
+    let fanGroup = new Konva.Group();
     let fanLayer = new Konva.Layer();
-    drawFan(stage, fanLayer, {
-        x: 300,
-        y: 470,
+    drawFan(stage, fanGroup, fanLayer, {
+        x: 0.1 * WIDTH,
+        y: 0.75 * HEIGHT,
         condition: 0,
         rotate: true,
         angularSpeed: 180,  // one revolution per 2 seconds (2 * 180 = 360)
     });
-    drawFan(stage, fanLayer, {
-        x: 1200,
-        y: 220,
+    drawFan(stage, fanGroup, fanLayer, {
+        x: 0.82 * WIDTH,
+        y: 0.2 * HEIGHT,
         condition: 1,
         rotate: false,
     });
 }
 
-function drawFan(stage, fanLayer, options) {
+function drawFan(stage, fanGroup, fanLayer, options) {
     let x = options.x == undefined ? 30 : options.x;
     let y = options.y == undefined ? 30 : options.y;
     let condition = options.condition == undefined ? 0 : options.condition;
@@ -61,23 +76,38 @@ function drawFan(stage, fanLayer, options) {
             x: x,
             y: y,
             image: fan,
-            width: 60,
-            height: 60,
+            width: 80,
+            height: 80,
             draggable: true,
             offset: {
-                x: 30,
-                y: 30,
+                x: 40,
+                y: 40,
             },
             name: "draggable"
         });
-        fanLayer.add(theFan);
+        fanGroup.add(theFan);
+        fanLayer.add(fanGroup);
         stage.add(fanLayer);
         fanLayer.setZIndex(6);
         // 对齐到网格
         snapToGrid(theFan, fanLayer);
         // 绑定事件
-        theFan.on('mouseenter', function () { stage.container().style.cursor = 'pointer'; });
-        theFan.on('mouseleave', function () { stage.container().style.cursor = 'default'; });
+        theFan.on('mouseenter', function () { 
+            stage.container().style.cursor = 'pointer';
+            theFan.width(100);
+            theFan.height(100);
+            theFan.offsetX(50);
+            theFan.offsetY(50);
+            fanLayer.draw();
+        });
+        theFan.on('mouseleave', function () { 
+            stage.container().style.cursor = 'default'; 
+            theFan.width(80);
+            theFan.height(80);
+            theFan.offsetX(40);
+            theFan.offsetY(40);
+            fanLayer.draw();
+        });
         if (rotate) {
             let anim = new Konva.Animation(function (frame) {
                 let angleDiff = frame.timeDiff * angularSpeed / 1000;
@@ -88,48 +118,49 @@ function drawFan(stage, fanLayer, options) {
     }
 }
 
-function drawServer(stage, serverLayer, options) {
+function drawRack(stage, rackGroup, rackLayer, options) {
     let x = options.x == undefined ? 0 : options.x;
     let y = options.y == undefined ? 0 : options.y;
     let condition = options.condition == undefined ? 0 : options.condition;
     // 加载资源
-    let server_green = new Image();
-    server_green.src = './images/server_green.svg';
-    let server = new Image();
+    let rack_green = new Image();
+    rack_green.src = './images/rack_green.svg';
+    let rack = new Image();
     if (condition == 0) {
-        server.src = './images/server_white.svg';
+        rack.src = './images/rack_white.svg';
     } else {
-        server.src = './images/server_red.svg';
+        rack.src = './images/rack_red.svg';
     }
     // 资源加载完成
-    server.onload = function () {
-        let theServer = new Konva.Image({
+    rack.onload = function () {
+        let theRack = new Konva.Image({
             x: x,
             y: y,
-            image: server,
+            image: rack,
             width: 40,
             height: 40,
             draggable: true,
             name: "draggable",
         });
-        serverLayer.add(theServer);
-        stage.add(serverLayer);
-        serverLayer.setZIndex(5);
+        rackGroup.add(theRack)
+        rackLayer.add(rackGroup);
+        stage.add(rackLayer);
+        rackLayer.setZIndex(5);
         // 对齐到网格
-        snapToGrid(theServer, serverLayer);
+        snapToGrid(theRack, rackLayer);
         // 事件绑定
-        theServer.on('mouseenter', function () {
+        theRack.on('mouseenter', function () {
             stage.container().style.cursor = 'pointer';
             if (condition == 0) {
-                theServer.setImage(server_green);
-                serverLayer.draw();
+                theRack.setImage(rack_green);
+                rackLayer.draw();
             }
         });
-        theServer.on('mouseleave', function () {
+        theRack.on('mouseleave', function () {
             stage.container().style.cursor = 'default';
             if (condition == 0) {
-                theServer.setImage(server);
-                serverLayer.draw();
+                theRack.setImage(rack);
+                rackLayer.draw();
             }
         });
     }
@@ -166,10 +197,18 @@ function drawRoomContour(stage) {
         lineCap: 'miter',
         lineJoin: 'round'
     });
+    let line1 = new Konva.Line({
+        points: [0.8 * outline.width(), 0, 0.8 * outline.width(), outline.height()],
+        stroke: line_color,
+        strokeWidth: line_breath,
+        lineCap: 'miter',
+        lineJoin: 'round'
+    });
 
     // 渲染
     group.add(outline);
     group.add(line0);
+    group.add(line1);
     contourLayer.add(group);
     stage.add(contourLayer);
     contourLayer.setZIndex(1);
