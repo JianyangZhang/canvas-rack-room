@@ -19,8 +19,52 @@ window.onload = function () {
             drawServer(stage, serverLayer, j, i);
         }
     }
+    // 绘制风扇
+    let fanLayer = new Konva.Layer();
+    drawFan(stage, fanLayer, 300, 470, "blue", true);
+    drawFan(stage, fanLayer, 1200, 220, "red", false);
 }
 
+function drawFan(stage, fanLayer, x, y, color, rotate) {
+    // 加载资源
+    let fan = new Image();
+    if (color == "blue") {
+        fan.src = './images/fan_blue.svg';
+    } else {
+        fan.src = './images/fan_red.svg';
+    }
+    // 资源加载完成
+    fan.onload = function () {
+        let theFan = new Konva.Image({
+            x: x,
+            y: y,
+            image: fan,
+            width: 60,
+            height: 60,
+            draggable: true,
+            offset: {
+                x: 30,
+                y: 30,
+            },
+        });
+        fanLayer.add(theFan);
+        stage.add(fanLayer);
+        fanLayer.setZIndex(6);
+        // 对齐到网格
+        snapToGrid(theFan, fanLayer);
+        // 绑定事件
+        theFan.on('mouseenter', function () { stage.container().style.cursor = 'pointer'; });
+        theFan.on('mouseleave', function () { stage.container().style.cursor = 'default'; });
+        if (rotate) {
+            let angularSpeed = 90; // one revolution per 4 seconds (4 * 90 = 360)
+            let anim = new Konva.Animation(function (frame) {
+                let angleDiff = frame.timeDiff * angularSpeed / 1000;
+                theFan.rotate(angleDiff);
+            }, fanLayer);
+            anim.start();
+        }
+    }
+}
 
 function drawServer(stage, serverLayer, x, y) {
     // 加载资源
@@ -54,7 +98,6 @@ function drawServer(stage, serverLayer, x, y) {
             serverWhite.setImage(server_white);
             serverLayer.draw();
         });
-
     }
 }
 
