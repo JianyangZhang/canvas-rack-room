@@ -3,8 +3,6 @@ const HEIGHT = 1000;
 const SCALE = { x: 0.65, y: 0.65 };
 
 window.onload = function () {
-    // document.getElementById('container').style.pointerEvents = 'none';
-    // document.getElementById('container').style.pointerEvents = 'auto';
     // 初始化画布
     let stage = new Konva.Stage({
         container: 'container',
@@ -19,28 +17,35 @@ window.onload = function () {
     // 绘制机架
     let rackGroup = new Konva.Group();
     let rackLayer = new Konva.Layer();
+    let tagGroup = new Konva.Group();
+    let tagLayer = new Konva.Layer();
+    let no = 0;
     for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
         for (let j = 0.2 * HEIGHT; j <= 0.45 * HEIGHT; j += 40) {
+            no++;
             let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
-            let status = condition == 10 ? "正常" : "告警";
-            drawRack(stage, rackGroup, rackLayer, {
+            let status = condition == 1 ? "告警" : "正常";
+            drawRack(stage, rackGroup, rackLayer, tagGroup, tagLayer, {
                 x: i,
                 y: j,
                 condition: condition,
-                hoverText: "编号: xxx<br>状态: " + status + "<br>详细信息: xxx"
+                hoverText: "编号: " + no + "\n状态: " + status + "\n详细信息: 备注",
+                align: 'left'
             });
         }
     }
 
     for (let i = 0.2 * WIDTH; i <= 0.7 * WIDTH; i += 150) {
         for (let j = 0.55 * HEIGHT; j <= 0.7 * HEIGHT; j += 40) {
+            no++;
             let condition = Math.floor(Math.random() * 11) == 10 ? 1 : 0;
-            let status = condition == 10 ? "正常" : "告警";
-            drawRack(stage, rackGroup, rackLayer, {
+            let status = condition == 1 ? "告警" : "正常";
+            drawRack(stage, rackGroup, rackLayer, tagGroup, tagLayer, {
                 x: i,
                 y: j,
                 condition: condition,
-                hoverText: "编号: xxx<br>状态: " + status + "<br>详细信息: xxx"
+                hoverText: "编号: " + no + "\n状态: " + status + "\n详细信息: xxx",
+                align: 'left'
             });
         }
     }
@@ -61,9 +66,24 @@ window.onload = function () {
         condition: 1,
         rotate: false,
     });
+
+    // 锁定功能按钮
+    document.getElementById("lock").onclick = function () { 
+        if (this.checked) {
+            console.log("编辑状态:开");
+            document.getElementById('container').style.pointerEvents = 'auto';
+            grids.layer.visible(true);
+            grids.layer.draw();
+        } else {
+            console.log("编辑状态:关");
+            document.getElementById('container').style.pointerEvents = 'none'
+            grids.layer.visible(false);
+            grids.layer.draw();
+        }
+     };
 }
 /* 机架 */
-function drawRack(stage, rackGroup, rackLayer, options) {
+function drawRack(stage, rackGroup, rackLayer, tagGroup, tagLayer, options) {
     let x = options.x == undefined ? 0 : options.x;
     let y = options.y == undefined ? 0 : options.y;
     let condition = options.condition == undefined ? 0 : options.condition;
@@ -78,28 +98,28 @@ function drawRack(stage, rackGroup, rackLayer, options) {
     }
     // 绘制悬停标签
     let tooltip = new Konva.Label({
-        x: 200,
-        y: 200,
-        opacity: 0.75,
-        visible: true
+        x: 0,
+        y: 0,
+        opacity: 0.9,
+        visible: false
     });
+    // 标签样式
     tooltip.add(new Konva.Tag({
-        fill: 'black',
+        fill: '#353446',
         pointerDirection: 'left',
         pointerWidth: 10,
         pointerHeight: 10,
-        lineJoin: 'round',
-        shadowColor: 'black',
-        shadowBlur: 10,
-        shadowOffset: 10,
-        shadowOpacity: 0.5
+        lineJoin: 'miter',
+        stroke: '#55C0D2',
     }));
+    // 标签字体
     tooltip.add(new Konva.Text({
         text: options.hoverText,
         fontFamily: 'Calibri',
         fontSize: 18,
         padding: 5,
-        fill: 'white'
+        fill: '#55C0D2',
+        lineHeight: 1.3
     }));
     // 资源加载完成
     rack.onload = function () {
@@ -110,30 +130,45 @@ function drawRack(stage, rackGroup, rackLayer, options) {
             width: 40,
             height: 40,
             draggable: true,
+            dragDistance: 0,
             name: "draggable",
         });
         rackGroup.add(theRack);
-        rackGroup.add(tooltip);
         rackLayer.add(rackGroup);
         stage.add(rackLayer);
         rackLayer.setZIndex(5);
+        tagGroup.add(tooltip);
+        tagLayer.add(tagGroup);
+        stage.add(tagLayer);
+        tagLayer.setZIndex(7);
         // 对齐到网格
         snapToGrid(theRack, rackLayer);
         // 事件绑定
         theRack.on('mouseenter', function () {
             stage.container().style.cursor = 'pointer';
+            tooltip.x(theRack.x() + 45);
+            tooltip.y(theRack.y() + 20);
+            tooltip.visible(true);
+            tagLayer.draw();
             if (condition == 0) {
                 theRack.setImage(rack_green);
                 rackLayer.draw();
             }
+
         });
         theRack.on('mouseleave', function () {
             stage.container().style.cursor = 'default';
+            tooltip.visible(false);
+            tagLayer.draw();
             if (condition == 0) {
                 theRack.setImage(rack);
                 rackLayer.draw();
             }
         });
+        theRack.on('dragstart', function () {
+            tooltip.visible(false);
+            tagLayer.draw();
+        })
     }
 }
 
@@ -160,6 +195,7 @@ function drawFan(stage, fanGroup, fanLayer, options) {
             width: 80,
             height: 80,
             draggable: true,
+            dragDistance: 0,
             offset: {
                 x: 40,
                 y: 40,

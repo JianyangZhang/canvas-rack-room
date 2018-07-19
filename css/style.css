@@ -4,3 +4,18 @@ body {
     overflow: scroll;
     background-color: #21202E;
 }
+
+#buttons {
+    position: absolute;
+    top: 15px;
+    left: 1000px;
+}
+
+#lock_text {
+    color: #55C0D2;
+    font-size: 13px;
+}
+
+#lock {
+    vertical-align: middle;
+}
