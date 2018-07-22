@@ -10,6 +10,8 @@ window.onload = function () {
         height: HEIGHT,
         scale: SCALE,
     });
+    let mainContainer = document.getElementById('mainContainer');
+    mainContainer.style.display = 'none';
     // 初始化服务器stage
     let serverStage = new Konva.Stage({
         container: 'serverContainer',
@@ -81,31 +83,49 @@ window.onload = function () {
         {
             pos: 0,
             name: "应用服务器",
-            model: "xxx",
+            model: "DELL 2900",
             ip: "192.168.0.1",
         },
         {
-            pos: 2,
-            name: "交换机",
-            model: "abc",
+            pos: 1,
+            name: "应用服务器",
+            model: "DELL 2900",
             ip: "192.168.8.6",
         },
         {
-            pos: 3,
-            name: "交换机",
-            model: "def",
+            pos: 2,
+            name: "应用服务器",
+            model: "dDELL 2900ef",
             ip: "192.168.8.8",
         },
         {
-            pos: 5,
+            pos: 3,
             name: "应用服务器",
-            model: "xxx",
+            model: "DELL 2900",
             ip: "192.168.6.6",
+        },
+        {
+            pos: 4,
+            name: "应用服务器",
+            model: "DELL 2900",
+            ip: "192.168.6.8",
+        },
+        {
+            pos: 6,
+            name: "应用服务器",
+            model: "DELL 2900",
+            ip: "192.168.6.8",
         },
         {
             pos: 8,
             name: "应用服务器",
-            model: "sun 4900",
+            model: "DELL 2900",
+            ip: "192.168.6.8",
+        },
+        {
+            pos: 9,
+            name: "应用服务器",
+            model: "DELL 2900",
             ip: "192.168.6.8",
         }
     ]);
@@ -436,10 +456,11 @@ function snapToGrid(obj, layer) {
 
 /* 服务器 */
 function drawServer(stage, group, layer, options) {
+    let unit = 0.02 * HEIGHT;
     // 地面
     let ground = new Konva.Line({
         points: [0.35 * WIDTH, 0.95 * HEIGHT, 0.35 * WIDTH, 0.92 * HEIGHT,
-        0.75 * WIDTH, 0.92 * HEIGHT, 0.75 * WIDTH, 0.95 * HEIGHT,
+        0.61 * WIDTH, 0.92 * HEIGHT, 0.61 * WIDTH, 0.95 * HEIGHT,
         ],
         stroke: 'white',
         strokeWidth: 4,
@@ -450,9 +471,9 @@ function drawServer(stage, group, layer, options) {
     for (let i = 0; i < 42; i++) {
         let outline = new Konva.Rect({
             x: 0.4 * WIDTH,
-            y: 0.9 * HEIGHT - i * (0.02 * HEIGHT),
+            y: 0.9 * HEIGHT - i * unit,
             width: 0.01 * WIDTH,
-            height: 0.02 * HEIGHT,
+            height: unit,
             stroke: "white",
             strokeWidth: 2
         });
@@ -460,8 +481,8 @@ function drawServer(stage, group, layer, options) {
     }
     // 机架轮廓
     let outline = new Konva.Line({
-        points: [0.4 * WIDTH, 0.06 * HEIGHT, 0.7 * WIDTH, 0.06 * HEIGHT,
-        0.7 * WIDTH, 0.92 * HEIGHT, 0.69 * WIDTH, 0.92 * HEIGHT, 0.69 * WIDTH, 0.08 * HEIGHT,
+        points: [0.4 * WIDTH, 0.06 * HEIGHT, 0.56 * WIDTH, 0.06 * HEIGHT,
+        0.56 * WIDTH, 0.92 * HEIGHT, 0.55 * WIDTH, 0.92 * HEIGHT, 0.55 * WIDTH, 0.08 * HEIGHT,
         0.4 * WIDTH, 0.08 * HEIGHT, 0.4 * WIDTH, 0.06 * HEIGHT
         ],
         stroke: 'white',
@@ -471,12 +492,11 @@ function drawServer(stage, group, layer, options) {
     });
     // 机器信息
     for (let i = 0; i < options.length; i++) {
-        let yGap = 3;
         let serverInfo = new Konva.Label({
-            x: 0.55 * WIDTH,
-            y: 0.92 * HEIGHT - yGap - options[i].pos * (0.08 * HEIGHT),
-            width: 0.27 * WIDTH,
-            height: 0.08 * HEIGHT - yGap,
+            x: 0.48 * WIDTH,
+            y: 0.92 * HEIGHT - 2 * unit - 2 * options[i].pos * (2 * unit),
+            width: 0.13 * WIDTH,
+            height: 2 * unit,
             opacity: 1,
         });
         serverInfo.add(new Konva.Tag({
@@ -490,10 +510,10 @@ function drawServer(stage, group, layer, options) {
             cornerRadius: 3,
         }));
         serverInfo.add(new Konva.Text({
-            width: 0.27 * WIDTH,
-            height: 0.08 * HEIGHT - 2 * yGap,
+            width: 0.13 * WIDTH,
+            height: 2 * unit,
             align: "center",
-            text: "设备: " + options[i].name + "\n型号: " + options[i].model + "\n IP: " + options[i].ip,
+            text: options[i].name + " (" + options[i].model + ")",
             fontFamily: 'Calibri',
             fontSize: 18,
             padding: 4,
