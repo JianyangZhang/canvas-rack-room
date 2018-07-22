@@ -10,8 +10,8 @@ window.onload = function () {
         height: HEIGHT,
         scale: SCALE,
     });
-    let mainContainer = document.getElementById('mainContainer');
-    mainContainer.style.display = 'none';
+    // let mainContainer = document.getElementById('mainContainer');
+    // mainContainer.style.display = 'none';
     // 初始化服务器stage
     let serverStage = new Konva.Stage({
         container: 'serverContainer',
