@@ -10,8 +10,8 @@ window.onload = function () {
         height: HEIGHT,
         scale: SCALE,
     });
-    // let mainContainer = document.getElementById('mainContainer');
-    // mainContainer.style.display = 'none';
+    // let mainContainer = document.getElementById('mainContainer'); // debug
+    // mainContainer.style.display = 'none'; // debug
     // 初始化服务器stage
     let serverStage = new Konva.Stage({
         container: 'serverContainer',
@@ -469,34 +469,41 @@ function drawServer(stage, group, layer, options) {
     });
     // 机架刻度
     for (let i = 0; i < 42; i++) {
-        let outline = new Konva.Rect({
+        let scaleLeft = new Konva.Rect({
             x: 0.4 * WIDTH,
             y: 0.9 * HEIGHT - i * unit,
             width: 0.01 * WIDTH,
             height: unit,
             stroke: "white",
-            strokeWidth: 2
+            strokeWidth: 2,
         });
-        group.add(outline);
+        let scaleRight = new Konva.Rect({
+            x: 0.55 * WIDTH,
+            y: 0.9 * HEIGHT - i * unit,
+            width: 0.01 * WIDTH,
+            height: unit,
+            stroke: "white",
+            strokeWidth: 2,
+        });
+        group.add(scaleLeft);
+        group.add(scaleRight);
     }
-    // 机架轮廓
-    let outline = new Konva.Line({
-        points: [0.4 * WIDTH, 0.06 * HEIGHT, 0.56 * WIDTH, 0.06 * HEIGHT,
-        0.56 * WIDTH, 0.92 * HEIGHT, 0.55 * WIDTH, 0.92 * HEIGHT, 0.55 * WIDTH, 0.08 * HEIGHT,
-        0.4 * WIDTH, 0.08 * HEIGHT, 0.4 * WIDTH, 0.06 * HEIGHT
-        ],
-        stroke: 'white',
-        strokeWidth: 2,
-        lineCap: 'round',
-        lineJoin: 'round',
+    // 架顶
+    let roof = new Konva.Rect({
+        x: 0.4 * WIDTH,
+        y: 0.06 * HEIGHT,
+        width: 0.16 * WIDTH,
+        height: unit,
+        stroke: "white",
+        strokeWidth: 2
     });
+
+
     // 机器信息
     for (let i = 0; i < options.length; i++) {
         let serverInfo = new Konva.Label({
             x: 0.48 * WIDTH,
             y: 0.92 * HEIGHT - 2 * unit - 2 * options[i].pos * (2 * unit),
-            width: 0.13 * WIDTH,
-            height: 2 * unit,
             opacity: 1,
         });
         serverInfo.add(new Konva.Tag({
@@ -510,7 +517,7 @@ function drawServer(stage, group, layer, options) {
             cornerRadius: 3,
         }));
         serverInfo.add(new Konva.Text({
-            width: 0.13 * WIDTH,
+            width: 0.132 * WIDTH,
             height: 2 * unit,
             align: "center",
             text: options[i].name + " (" + options[i].model + ")",
@@ -523,8 +530,7 @@ function drawServer(stage, group, layer, options) {
         group.add(serverInfo);
     }
     group.add(ground);
-    group.add(outline);
-
+    group.add(roof);
     layer.add(group);
     stage.add(layer);
 }
