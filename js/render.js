@@ -3,9 +3,16 @@ const HEIGHT = 1000;
 const SCALE = { x: 0.65, y: 0.65 };
 
 window.onload = function () {
-    // 初始化画布
+    // 初始化机房stage
     let stage = new Konva.Stage({
-        container: 'container',
+        container: 'mainContainer',
+        width: WIDTH,
+        height: HEIGHT,
+        scale: SCALE,
+    });
+    // 初始化服务器stage
+    let serverStage = new Konva.Stage({
+        container: 'serverContainer',
         width: WIDTH,
         height: HEIGHT,
         scale: SCALE,
@@ -67,21 +74,70 @@ window.onload = function () {
         rotate: false,
     });
 
+    // 绘制服务器
+    let serverGroup = new Konva.Group();
+    let serverLayer = new Konva.Layer();
+    drawServer(serverStage, serverGroup, serverLayer, [
+        {
+            pos: 0,
+            name: "应用服务器",
+            model: "xxx",
+            ip: "192.168.0.1",
+        },
+        {
+            pos: 2,
+            name: "交换机",
+            model: "abc",
+            ip: "192.168.8.6",
+        },
+        {
+            pos: 3,
+            name: "交换机",
+            model: "def",
+            ip: "192.168.8.8",
+        },
+        {
+            pos: 5,
+            name: "应用服务器",
+            model: "xxx",
+            ip: "192.168.6.6",
+        },
+        {
+            pos: 8,
+            name: "应用服务器",
+            model: "sun 4900",
+            ip: "192.168.6.8",
+        }
+    ]);
+
     // 锁定功能按钮
-    document.getElementById("lock").onclick = function () { 
+    document.getElementById("lock").onclick = function () {
         if (this.checked) {
             console.log("编辑状态:开");
-            document.getElementById('container').style.pointerEvents = 'auto';
+            document.getElementById('mainContainer').style.pointerEvents = 'auto';
             grids.layer.visible(true);
             grids.layer.draw();
         } else {
             console.log("编辑状态:关");
-            document.getElementById('container').style.pointerEvents = 'none'
+            document.getElementById('mainContainer').style.pointerEvents = 'none'
             grids.layer.visible(false);
             grids.layer.draw();
         }
-     };
+    };
+    // 返回功能按钮
+
+    document.getElementById("view").onclick = function () {
+        let mainContainer = document.getElementById('mainContainer');
+        mainContainer.style.display = 'block';
+        let view = document.getElementById('view');
+        view.style.visibility = 'hidden';
+    }
 }
+
+/*==================================================================================================*/
+/*==================================================================================================*/
+/*==================================================================================================*/
+
 /* 机架 */
 function drawRack(stage, rackGroup, rackLayer, tagGroup, tagLayer, options) {
     let x = options.x == undefined ? 0 : options.x;
@@ -168,6 +224,12 @@ function drawRack(stage, rackGroup, rackLayer, tagGroup, tagLayer, options) {
         theRack.on('dragstart', function () {
             tooltip.visible(false);
             tagLayer.draw();
+        })
+        theRack.on('click', function () {
+            let mainContainer = document.getElementById('mainContainer');
+            mainContainer.style.display = 'none';
+            let view = document.getElementById('view');
+            view.style.visibility = 'visible';
         })
     }
 }
@@ -370,4 +432,79 @@ function snapToGrid(obj, layer) {
         }
         layer.draw();
     });
+}
+
+/* 服务器 */
+function drawServer(stage, group, layer, options) {
+    // 地面
+    let ground = new Konva.Line({
+        points: [0.35 * WIDTH, 0.95 * HEIGHT, 0.35 * WIDTH, 0.92 * HEIGHT,
+        0.75 * WIDTH, 0.92 * HEIGHT, 0.75 * WIDTH, 0.95 * HEIGHT,
+        ],
+        stroke: 'white',
+        strokeWidth: 4,
+        lineCap: 'round',
+        lineJoin: 'round'
+    });
+    // 机架刻度
+    for (let i = 0; i < 42; i++) {
+        let outline = new Konva.Rect({
+            x: 0.4 * WIDTH,
+            y: 0.9 * HEIGHT - i * (0.02 * HEIGHT),
+            width: 0.01 * WIDTH,
+            height: 0.02 * HEIGHT,
+            stroke: "white",
+            strokeWidth: 2
+        });
+        group.add(outline);
+    }
+    // 机架轮廓
+    let outline = new Konva.Line({
+        points: [0.4 * WIDTH, 0.06 * HEIGHT, 0.7 * WIDTH, 0.06 * HEIGHT,
+        0.7 * WIDTH, 0.92 * HEIGHT, 0.69 * WIDTH, 0.92 * HEIGHT, 0.69 * WIDTH, 0.08 * HEIGHT,
+        0.4 * WIDTH, 0.08 * HEIGHT, 0.4 * WIDTH, 0.06 * HEIGHT
+        ],
+        stroke: 'white',
+        strokeWidth: 2,
+        lineCap: 'round',
+        lineJoin: 'round',
+    });
+    // 机器信息
+    for (let i = 0; i < options.length; i++) {
+        let yGap = 3;
+        let serverInfo = new Konva.Label({
+            x: 0.55 * WIDTH,
+            y: 0.92 * HEIGHT - yGap - options[i].pos * (0.08 * HEIGHT),
+            width: 0.27 * WIDTH,
+            height: 0.08 * HEIGHT - yGap,
+            opacity: 1,
+        });
+        serverInfo.add(new Konva.Tag({
+            fill: '#353446',
+            pointerDirection: 'down', // 方便确定位置
+            pointerWidth: 0,
+            pointerHeight: 0,
+            lineJoin: 'miter',
+            stroke: '#55C0D2',
+            strokeWidth: 2,
+            cornerRadius: 3,
+        }));
+        serverInfo.add(new Konva.Text({
+            width: 0.27 * WIDTH,
+            height: 0.08 * HEIGHT - 2 * yGap,
+            align: "center",
+            text: "设备: " + options[i].name + "\n型号: " + options[i].model + "\n IP: " + options[i].ip,
+            fontFamily: 'Calibri',
+            fontSize: 18,
+            padding: 4,
+            fill: '#55C0D2',
+            lineHeight: 1.2
+        }));
+        group.add(serverInfo);
+    }
+    group.add(ground);
+    group.add(outline);
+
+    layer.add(group);
+    stage.add(layer);
 }
