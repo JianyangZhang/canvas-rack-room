@@ -95,7 +95,7 @@ window.onload = function () {
         {
             pos: 2,
             name: "应用服务器",
-            model: "dDELL 2900ef",
+            model: "DELL 2900",
             ip: "192.168.8.8",
         },
         {
