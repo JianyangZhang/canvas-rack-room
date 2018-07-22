@@ -19,3 +19,7 @@ body {
 #lock {
     vertical-align: middle;
 }
+
+#view {
+    visibility: hidden;
+}
